@@ -1,26 +1,35 @@
-import Database, { Database as DatabaseType } from 'better-sqlite3';
+// import Database, { Database as DatabaseType } from 'better-sqlite3';
 import path from 'path';
 
 declare global {
-  var _sqliteDb: DatabaseType | undefined;
+  var _sqliteDb: any | undefined;
 }
 
-const dbPath = path.resolve(process.cwd(), 'auction_final.db');
+const isVercel = process.env.VERCEL === "1";
 
-let db: DatabaseType;
+let db: any;
 
-if (process.env.NODE_ENV === 'production') {
-  db = new Database(dbPath);
-  db.pragma('journal_mode = WAL');
-} else {
-  if (!global._sqliteDb) {
-    global._sqliteDb = new Database(dbPath);
-    global._sqliteDb.pragma('journal_mode = WAL');
+if (!isVercel) {
+  const Database = require("better-sqlite3");
+  const dbPath = path.resolve(process.cwd(), 'auction_final.db');
+
+  if (process.env.NODE_ENV === 'production') {
+    db = new Database(dbPath);
+    db.pragma('journal_mode = WAL');
+  } else {
+    if (!global._sqliteDb) {
+      global._sqliteDb = new Database(dbPath);
+      global._sqliteDb.pragma('journal_mode = WAL');
+    }
+    db = global._sqliteDb;
   }
-  db = global._sqliteDb;
+} else {
+  console.log("Vercel muhitida SQLite ishlamaydi");
 }
 
 const initDB = () => {
+  if (!db) return; // 🔥 MUHIM
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

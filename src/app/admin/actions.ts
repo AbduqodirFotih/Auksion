@@ -4,13 +4,12 @@ import db from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 
+// ✅ ADD PLATE
 export async function addPlate(prevState: any, formData: FormData) {
   const session = await getSession();
   if (!session || session.role !== 'admin') {
     return { error: 'Ruxsat etilmagan' };
   }
-
-  if (!db) return { error: "DB yo‘q (Vercel)" };
 
   const number = formData.get('number')?.toString() || '';
   const regionCode = formData.get('regionCode')?.toString() || '';
@@ -24,63 +23,60 @@ export async function addPlate(prevState: any, formData: FormData) {
     const now = Date.now();
     const sevenDays = 7 * 24 * 60 * 60 * 1000;
 
-    const insertPlate = db.prepare(`
-      INSERT INTO plates (number, regionCode, startingPrice, currentPrice, endTime)
-      VALUES (?, ?, ?, ?, ?)
-    `);
+    db.plates.push({
+      id: Date.now(),
+      number,
+      regionCode,
+      startingPrice,
+      currentPrice: startingPrice,
+      endTime: now + sevenDays,
+      status: 'active'
+    });
 
-    insertPlate.run(number, regionCode, startingPrice, startingPrice, now + sevenDays);
     revalidatePath('/admin');
     revalidatePath('/');
     return { success: true };
   } catch (err: any) {
-    if (err.message.includes('UNIQUE constraint failed')) {
-      return { error: 'Bu raqam bazada mavjud' };
-    }
     return { error: 'Xatolik yuz berdi' };
   }
 }
 
+// ✅ FINISH
 export async function finishPlate(plateId: number) {
   const session = await getSession();
   if (!session || session.role !== 'admin') return { error: 'Ruxsat etilmagan' };
 
-  if (!db) return { error: "DB yo‘q (Vercel)" };
+  const plate = db.plates.find((p: any) => p.id === plateId);
+  if (plate) plate.status = 'finished';
 
-  db.prepare('UPDATE plates SET status = ? WHERE id = ?').run('finished', plateId);
   revalidatePath('/admin');
   revalidatePath('/');
   revalidatePath(`/auction/${plateId}`);
   return { success: true };
 }
 
+// ✅ DELETE
 export async function deletePlate(plateId: number) {
   const session = await getSession();
   if (!session || session.role !== 'admin') return { error: 'Ruxsat etilmagan' };
 
-  if (!db) return { error: "DB yo‘q (Vercel)" };
-
-  db.transaction(() => {
-    db.prepare('DELETE FROM bids WHERE plateId = ?').run(plateId);
-    db.prepare('DELETE FROM plates WHERE id = ?').run(plateId);
-  })();
+  db.bids = db.bids.filter((b: any) => b.plateId !== plateId);
+  db.plates = db.plates.filter((p: any) => p.id !== plateId);
 
   revalidatePath('/admin');
   revalidatePath('/');
   return { success: true };
 }
 
+// ✅ TOGGLE
 export async function toggleStatus(plateId: number) {
   const session = await getSession();
   if (!session || session.role !== 'admin') return { error: 'Ruxsat etilmagan' };
 
-  if (!db) return { error: "DB yo‘q (Vercel)" };
-
-  const plate = db.prepare('SELECT status FROM plates WHERE id = ?').get(plateId) as any;
+  const plate = db.plates.find((p: any) => p.id === plateId);
   if (!plate || plate.status === 'finished') return { error: 'Auksion tugagan' };
 
-  const newStatus = plate.status === 'active' ? 'inactive' : 'active';
-  db.prepare('UPDATE plates SET status = ? WHERE id = ?').run(newStatus, plateId);
+  plate.status = plate.status === 'active' ? 'inactive' : 'active';
 
   revalidatePath(`/auction/${plateId}`);
   revalidatePath('/admin');
@@ -88,17 +84,15 @@ export async function toggleStatus(plateId: number) {
   return { success: true };
 }
 
+// ✅ ADD TIME
 export async function addTime(plateId: number, minutes: number) {
   const session = await getSession();
   if (!session || session.role !== 'admin') return { error: 'Ruxsat etilmagan' };
 
-  if (!db) return { error: "DB yo‘q (Vercel)" };
+  const plate = db.plates.find((p: any) => p.id === plateId);
+  if (!plate) return { error: 'Topilmadi' };
 
-  const plate = db.prepare('SELECT endTime FROM plates WHERE id = ?').get(plateId) as any;
-  if (!plate || !plate.endTime) return { error: 'Topilmadi' };
-
-  const newTime = plate.endTime + (minutes * 60 * 1000);
-  db.prepare('UPDATE plates SET endTime = ? WHERE id = ?').run(newTime, plateId);
+  plate.endTime += minutes * 60 * 1000;
 
   revalidatePath(`/auction/${plateId}`);
   revalidatePath('/admin');
@@ -106,57 +100,52 @@ export async function addTime(plateId: number, minutes: number) {
   return { success: true };
 }
 
+// ✅ REACTIVATE
 export async function reactivatePlate(plateId: number) {
   const session = await getSession();
   if (!session || session.role !== 'admin') return { error: 'Ruxsat etilmagan' };
 
-  if (!db) return { error: "DB yo‘q (Vercel)" };
-
-  const plate = db.prepare('SELECT endTime FROM plates WHERE id = ?').get(plateId) as any;
+  const plate = db.plates.find((p: any) => p.id === plateId);
   if (!plate) return { error: 'Topilmadi' };
 
-  let newTime = plate.endTime;
   const now = Date.now();
-
-  if (newTime <= now) {
-    newTime = now + (24 * 60 * 60 * 1000);
+  if (plate.endTime <= now) {
+    plate.endTime = now + (24 * 60 * 60 * 1000);
   }
-
-  db.prepare('UPDATE plates SET status = ?, endTime = ? WHERE id = ?')
-    .run('active', newTime, plateId);
+  plate.status = 'active';
 
   revalidatePath('/admin');
   revalidatePath('/');
   return { success: true };
 }
 
+// ✅ EDIT PLATE
 export async function editPlateAction(plateId: number, prevState: any, formData: FormData) {
   const session = await getSession();
-  if (!session || session.role !== 'admin') return { error: 'Ruxsat etilmagan' };
-
-  if (!db) return { error: "DB yo‘q (Vercel)" };
+  if (!session || session.role !== 'admin') {
+    return { error: 'Ruxsat etilmagan' };
+  }
 
   const number = formData.get('number')?.toString() || '';
   const regionCode = formData.get('regionCode')?.toString() || '';
   const startingPrice = formData.get('startingPrice')?.toString().replace(/\D/g, '') || '0';
 
   if (!number || !regionCode || startingPrice === '0') {
-    return { error: "Barcha maydonlarni to'ldiring" };
+    return { error: "Barcha maydonlarni to'g'ri to'ldiring" };
   }
 
   try {
-    db.prepare(`
-      UPDATE plates SET number = ?, regionCode = ?, startingPrice = ? WHERE id = ?
-    `).run(number.toUpperCase(), regionCode, startingPrice, plateId);
+    const plate = db.plates.find((p: any) => p.id === plateId);
+    if (!plate) return { error: 'Raqam topilmadi' };
+
+    plate.number = number;
+    plate.regionCode = regionCode;
+    plate.startingPrice = startingPrice;
 
     revalidatePath('/admin');
     revalidatePath('/');
-    revalidatePath(`/auction/${plateId}`);
     return { success: true };
   } catch (err: any) {
-    if (err.message.includes('UNIQUE constraint failed')) {
-      return { error: 'Bunday raqam allaqachon mavjud' };
-    }
     return { error: 'Xatolik yuz berdi' };
   }
 }

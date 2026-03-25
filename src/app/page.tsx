@@ -1,4 +1,5 @@
-import { getSession, logout } from '@/lib/auth';
+import { getSession } from '@/lib/auth';
+import { logoutAction } from './actions';
 import db from '@/lib/db';
 import Link from 'next/link';
 import { formatMoneyString } from '@/lib/utils';
@@ -9,14 +10,30 @@ export default async function HomePage() {
   const session = await getSession();
   
   const now = Date.now();
-  db.prepare('UPDATE plates SET status = ? WHERE endTime < ? AND status = ?').run('finished', now, 'active');
+
+  // In-memory data uchun to'g'ri ishlash
+  db.plates.forEach((p: any) => {
+    if (p.endTime < now && p.status === 'active') {
+      p.status = 'finished';
+    }
+  });
   
-  const allPlates = db.prepare('SELECT * FROM plates ORDER BY status ASC, endTime ASC').all() as any[];
+  let allPlates: any[] = [...(db.plates || [])].sort((a, b) => {
+    if (a.status !== b.status) return a.status.localeCompare(b.status);
+    return a.endTime - b.endTime;
+  });
 
   const platesWithWinners = allPlates.map(plate => {
     let winner = null;
     if (plate.status === 'finished') {
-       winner = db.prepare(`SELECT users.name as userName, bids.amount FROM bids JOIN users ON bids.userId = users.id WHERE plateId = ? ORDER BY amount DESC LIMIT 1`).get(plate.id) as any;
+      const plateBids = db.bids.filter((b: any) => b.plateId === plate.id).sort((a: any, b: any) => Number(b.amount) - Number(a.amount));
+      if (plateBids.length > 0) {
+        const highestBid = plateBids[0];
+        const user = db.users.find((u: any) => u.id === highestBid.userId);
+        if (user) {
+          winner = { userName: user.name, amount: highestBid.amount };
+        }
+      }
     }
     return { ...plate, winner };
   });
@@ -46,7 +63,7 @@ export default async function HomePage() {
                   <ShieldCheck size={18} /> <span className="hidden sm:inline">Admin Panel</span>
                 </Link>
               )}
-              <form action={async () => { 'use server'; await logout(); }}>
+              <form action={logoutAction}>
                  <button className="text-slate-400 hover:text-red-400 transition-colors p-2.5 rounded-full hover:bg-slate-900 focus:ring-2 focus:ring-slate-800">
                    <LogOut size={20} />
                  </button>

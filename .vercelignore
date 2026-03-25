@@ -1,0 +1,10 @@
+*.db
+*.db-shm
+*.db-wal
+*.log
+build.log
+ts_errors.log
+ts_errors.txt
+node_modules
+.next
+.git

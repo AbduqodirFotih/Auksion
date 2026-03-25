@@ -1,88 +1,138 @@
-// import Database, { Database as DatabaseType } from 'better-sqlite3';
-import path from 'path';
-
-declare global {
-  var _sqliteDb: any | undefined;
-}
-
-const isVercel = process.env.VERCEL === "1";
-
-let db: any;
-
-if (!isVercel) {
-  const Database = require("better-sqlite3");
-  const dbPath = path.resolve(process.cwd(), 'auction_final.db');
-
-  if (process.env.NODE_ENV === 'production') {
-    db = new Database(dbPath);
-    db.pragma('journal_mode = WAL');
-  } else {
-    if (!global._sqliteDb) {
-      global._sqliteDb = new Database(dbPath);
-      global._sqliteDb.pragma('journal_mode = WAL');
-    }
-    db = global._sqliteDb;
-  }
-} else {
-  console.log("Vercel muhitida SQLite ishlamaydi");
-}
-
-const initDB = () => {
-  if (!db) return; // 🔥 MUHIM
-
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT UNIQUE NOT NULL,
-      role TEXT NOT NULL DEFAULT 'user'
-    )
-  `);
-
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS plates (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      number TEXT UNIQUE NOT NULL,
-      regionCode TEXT NOT NULL,
-      startingPrice TEXT NOT NULL,
-      currentPrice TEXT NOT NULL,
-      endTime INTEGER NOT NULL,
-      status TEXT NOT NULL DEFAULT 'active'
-    )
-  `);
-
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS bids (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      plateId INTEGER NOT NULL,
-      userId INTEGER NOT NULL,
-      amount TEXT NOT NULL,
-      createdAt INTEGER NOT NULL,
-      FOREIGN KEY(plateId) REFERENCES plates(id),
-      FOREIGN KEY(userId) REFERENCES users(id)
-    )
-  `);
-
-  const adminExists = db.prepare('SELECT id FROM users WHERE name = ?').get('admin');
-  if (!adminExists) {
-    db.prepare(`INSERT INTO users (name, role) VALUES ('admin', 'admin')`).run();
-  }
-
-  const platesCount = db.prepare('SELECT COUNT(*) as count FROM plates').get() as {count: number};
-  if (platesCount.count === 0) {
-    const now = Date.now();
-    const sevenDays = 7 * 24 * 60 * 60 * 1000;
-    
-    const insertPlate = db.prepare(`
-      INSERT INTO plates (number, regionCode, startingPrice, currentPrice, endTime)
-      VALUES (?, ?, ?, ?, ?)
-    `);
-
-    insertPlate.run('777 AA', '01', '5000000', '5000000', now + sevenDays);
-    insertPlate.run('222 BB', '10', '3000000', '3000000', now + sevenDays);
-    insertPlate.run('001 VIP', '01', '10000000', '10000000', now + sevenDays);
-  }
+type User = {
+  id: number;
+  name: string;
+  role: string;
 };
 
-initDB();
+type Plate = {
+  id: number;
+  number: string;
+  regionCode: string;
+  startingPrice: string;
+  currentPrice: string;
+  endTime: number;
+  status: string;
+};
+
+type Bid = {
+  id: number;
+  plateId: number;
+  userId: number;
+  amount: string;
+  createdAt: number;
+};
+
+// Global in-memory data
+const data: {
+  users: User[];
+  plates: Plate[];
+  bids: Bid[];
+} = {
+  users: [
+    { id: 1, name: "admin", role: "admin" },
+    { id: 2, name: "user", role: "user" }
+  ],
+  plates: [
+    {
+      id: 1,
+      number: "777 AA",
+      regionCode: "01",
+      startingPrice: "5000000",
+      currentPrice: "5000000",
+      endTime: Date.now() + 7 * 24 * 60 * 60 * 1000,
+      status: "active"
+    }
+  ],
+  bids: []
+};
+
+// Vercel serverless va in-memory data uchun
+const db: any = {
+  // Direct access uchun
+  users: data.users,
+  plates: data.plates,
+  bids: data.bids,
+
+  // SQL-style access (compatibility)
+  prepare: (query: string) => {
+    return {
+      get: (...params: any[]) => {
+        if (query.includes("FROM users")) {
+          return data.users.find((u) => u.name === params[0]) || null;
+        }
+
+        if (query.includes("FROM plates WHERE id")) {
+          return data.plates.find((p) => p.id === params[0]) || null;
+        }
+
+        return null;
+      },
+
+      all: (...params: any[]) => {
+        if (query.includes("FROM plates ORDER BY")) {
+          return [...data.plates];
+        }
+        if (query.includes("FROM bids")) {
+          if (query.includes("WHERE plateId")) {
+            return data.bids.filter(b => b.plateId === params[0]);
+          }
+          return data.bids;
+        }
+        return [];
+      },
+
+      run: (...params: any[]) => {
+        if (query.includes("INSERT INTO plates")) {
+          data.plates.push({
+            id: Date.now(),
+            number: params[0],
+            regionCode: params[1],
+            startingPrice: params[2],
+            currentPrice: params[3],
+            endTime: params[4],
+            status: "active"
+          });
+        }
+
+        if (query.includes("INSERT INTO bids")) {
+          data.bids.push({
+            id: Date.now(),
+            plateId: params[0],
+            userId: params[1],
+            amount: params[2],
+            createdAt: params[3]
+          });
+        }
+
+        if (query.includes("UPDATE plates SET status")) {
+          const plate = data.plates.find((p) => p.id === params[1]);
+          if (plate) plate.status = params[0];
+        }
+
+        if (query.includes("UPDATE plates SET currentPrice")) {
+          const plate = data.plates.find((p) => p.id === params[2]);
+          if (plate) {
+            plate.currentPrice = params[0];
+            plate.endTime = params[1];
+          }
+        }
+
+        if (query.includes("DELETE FROM plates")) {
+          data.plates = data.plates.filter((p) => p.id !== params[0]);
+        }
+
+        if (query.includes("DELETE FROM bids")) {
+          data.bids = data.bids.filter((b) => b.plateId !== params[0]);
+        }
+      }
+    };
+  },
+
+  transaction: (fn: any) => {
+    return (...args: any[]) => fn(...args);
+  },
+
+  exec: () => {}
+};
 
 export default db;

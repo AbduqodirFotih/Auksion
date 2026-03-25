@@ -1,33 +1,35 @@
-﻿src/app/admin/actions.ts(18,46): error TS1005: ',' expected.
-src/app/admin/actions.ts(18,47): error TS1127: Invalid character.
-src/app/admin/actions.ts(18,48): error TS1127: Invalid character.
-src/app/admin/actions.ts(18,58): error TS1005: ':' expected.
-src/app/admin/actions.ts(18,65): error TS1005: ',' expected.
-src/app/admin/actions.ts(18,69): error TS1002: Unterminated string literal.
-src/app/admin/actions.ts(19,3): error TS1005: ':' expected.
-src/app/admin/actions.ts(93,1): error TS1005: '}' expected.
-src/app/auction/[id]/actions.ts(10,38): error TS1005: ',' expected.
-src/app/auction/[id]/actions.ts(10,46): error TS1005: ',' expected.
-src/app/auction/[id]/actions.ts(10,47): error TS1127: Invalid character.
-src/app/auction/[id]/actions.ts(10,48): error TS1127: Invalid character.
-src/app/auction/[id]/actions.ts(10,95): error TS1005: ':' expected.
-src/app/auction/[id]/actions.ts(26,43): error TS1005: ',' expected.
-src/app/auction/[id]/actions.ts(26,44): error TS1127: Invalid character.
-src/app/auction/[id]/actions.ts(26,45): error TS1127: Invalid character.
-src/app/auction/[id]/actions.ts(26,65): error TS1005: ':' expected.
-src/app/auction/[id]/AdminControlsCard.tsx(47,57): error TS1005: ',' expected.
-src/app/auction/[id]/AdminControlsCard.tsx(47,73): error TS1005: ':' expected.
-src/app/auction/[id]/AdminControlsCard.tsx(47,75): error TS1005: ',' expected.
-src/app/auction/[id]/AdminControlsCard.tsx(47,78): error TS1002: Unterminated string literal.
-src/app/auction/[id]/AdminControlsCard.tsx(48,15): error TS1005: ',' expected.
-src/app/auction/[id]/AdminControlsCard.tsx(60,54): error TS1005: ',' expected.
-src/app/auction/[id]/AdminControlsCard.tsx(60,76): error TS1005: ',' expected.
-src/app/auction/[id]/AdminControlsCard.tsx(60,79): error TS1127: Invalid character.
-src/app/auction/[id]/AdminControlsCard.tsx(65,18): error TS1005: '}' expected.
-src/app/auction/[id]/AdminControlsCard.tsx(66,14): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
-src/app/auction/[id]/AdminControlsCard.tsx(67,12): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
-src/app/auction/[id]/AdminControlsCard.tsx(67,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
-src/app/auction/[id]/AdminControlsCard.tsx(70,9): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
-src/app/auction/[id]/AdminControlsCard.tsx(72,11): error TS17002: Expected corresponding JSX closing tag for 'div'.
-src/app/auction/[id]/AdminControlsCard.tsx(74,5): error TS1005: ')' expected.
-src/app/auction/[id]/AdminControlsCard.tsx(75,3): error TS1109: Expression expected.
+src/app/admin/actions.ts(4,10): error TS2614: Module '"@/lib/auth"' has no exported member 'getSession'. Did you mean to use 'import getSession from "@/lib/auth"' instead?
+src/app/admin/actions.ts(29,10): error TS2339: Property 'plates' does not exist on type '{ prepare: (query: string) => { get: (...params: any[]) => User | Plate | null; all: () => Plate[] | Bid[]; run: (...params: any[]) => void; }; transaction: (fn: any) => (...args: any[]) => any; exec: () => void; }'.
+src/app/admin/actions.ts(59,22): error TS2339: Property 'plates' does not exist on type '{ prepare: (query: string) => { get: (...params: any[]) => User | Plate | null; all: () => Plate[] | Bid[]; run: (...params: any[]) => void; }; transaction: (fn: any) => (...args: any[]) => any; exec: () => void; }'.
+src/app/admin/actions.ts(77,8): error TS2339: Property 'bids' does not exist on type '{ prepare: (query: string) => { get: (...params: any[]) => User | Plate | null; all: () => Plate[] | Bid[]; run: (...params: any[]) => void; }; transaction: (fn: any) => (...args: any[]) => any; exec: () => void; }'.
+src/app/admin/actions.ts(77,18): error TS2339: Property 'bids' does not exist on type '{ prepare: (query: string) => { get: (...params: any[]) => User | Plate | null; all: () => Plate[] | Bid[]; run: (...params: any[]) => void; }; transaction: (fn: any) => (...args: any[]) => any; exec: () => void; }'.
+src/app/admin/actions.ts(78,8): error TS2339: Property 'plates' does not exist on type '{ prepare: (query: string) => { get: (...params: any[]) => User | Plate | null; all: () => Plate[] | Bid[]; run: (...params: any[]) => void; }; transaction: (fn: any) => (...args: any[]) => any; exec: () => void; }'.
+src/app/admin/actions.ts(78,20): error TS2339: Property 'plates' does not exist on type '{ prepare: (query: string) => { get: (...params: any[]) => User | Plate | null; all: () => Plate[] | Bid[]; run: (...params: any[]) => void; }; transaction: (fn: any) => (...args: any[]) => any; exec: () => void; }'.
+src/app/admin/actions.ts(97,22): error TS2339: Property 'plates' does not exist on type '{ prepare: (query: string) => { get: (...params: any[]) => User | Plate | null; all: () => Plate[] | Bid[]; run: (...params: any[]) => void; }; transaction: (fn: any) => (...args: any[]) => any; exec: () => void; }'.
+src/app/admin/actions.ts(121,22): error TS2339: Property 'plates' does not exist on type '{ prepare: (query: string) => { get: (...params: any[]) => User | Plate | null; all: () => Plate[] | Bid[]; run: (...params: any[]) => void; }; transaction: (fn: any) => (...args: any[]) => any; exec: () => void; }'.
+src/app/admin/actions.ts(145,22): error TS2339: Property 'plates' does not exist on type '{ prepare: (query: string) => { get: (...params: any[]) => User | Plate | null; all: () => Plate[] | Bid[]; run: (...params: any[]) => void; }; transaction: (fn: any) => (...args: any[]) => any; exec: () => void; }'.
+src/app/admin/edit/[id]/EditPlateClientForm.tsx(4,10): error TS2305: Module '"@/app/admin/actions"' has no exported member 'editPlateAction'.
+src/app/admin/edit/[id]/EditPlateClientForm.tsx(32,15): error TS2339: Property 'error' does not exist on type 'never'.
+src/app/admin/edit/[id]/EditPlateClientForm.tsx(34,56): error TS2339: Property 'error' does not exist on type 'never'.
+src/app/admin/edit/[id]/EditPlateClientForm.tsx(38,15): error TS2339: Property 'success' does not exist on type 'never'.
+src/app/admin/edit/[id]/page.tsx(4,10): error TS2614: Module '"@/lib/auth"' has no exported member 'getSession'. Did you mean to use 'import getSession from "@/lib/auth"' instead?
+src/app/admin/layout.tsx(1,10): error TS2614: Module '"@/lib/auth"' has no exported member 'getSession'. Did you mean to use 'import getSession from "@/lib/auth"' instead?
+src/app/admin/layout.tsx(1,22): error TS2614: Module '"@/lib/auth"' has no exported member 'logout'. Did you mean to use 'import logout from "@/lib/auth"' instead?
+src/app/admin/page.tsx(18,12): error TS2554: Expected 0 arguments, but got 1.
+src/app/auction/[id]/actions.ts(4,10): error TS2614: Module '"@/lib/auth"' has no exported member 'getSession'. Did you mean to use 'import getSession from "@/lib/auth"' instead?
+src/app/auction/[id]/actions.ts(27,16): error TS2339: Property 'plates' does not exist on type '{ prepare: (query: string) => { get: (...params: any[]) => User | Plate | null; all: () => Plate[] | Bid[]; run: (...params: any[]) => void; }; transaction: (fn: any) => (...args: any[]) => any; exec: () => void; }'.
+src/app/auction/[id]/actions.ts(29,25): error TS2339: Property 'bids' does not exist on type '{ prepare: (query: string) => { get: (...params: any[]) => User | Plate | null; all: () => Plate[] | Bid[]; run: (...params: any[]) => void; }; transaction: (fn: any) => (...args: any[]) => any; exec: () => void; }'.
+src/app/auction/[id]/actions.ts(30,20): error TS2339: Property 'plates' does not exist on type '{ prepare: (query: string) => { get: (...params: any[]) => User | Plate | null; all: () => Plate[] | Bid[]; run: (...params: any[]) => void; }; transaction: (fn: any) => (...args: any[]) => any; exec: () => void; }'.
+src/app/auction/[id]/actions.ts(82,10): error TS2339: Property 'bids' does not exist on type '{ prepare: (query: string) => { get: (...params: any[]) => User | Plate | null; all: () => Plate[] | Bid[]; run: (...params: any[]) => void; }; transaction: (fn: any) => (...args: any[]) => any; exec: () => void; }'.
+src/app/auction/[id]/page.tsx(2,10): error TS2614: Module '"@/lib/auth"' has no exported member 'getSession'. Did you mean to use 'import getSession from "@/lib/auth"' instead?
+src/app/auction/[id]/page.tsx(20,16): error TS2339: Property 'plates' does not exist on type '{ prepare: (query: string) => { get: (...params: any[]) => User | Plate | null; all: () => Plate[] | Bid[]; run: (...params: any[]) => void; }; transaction: (fn: any) => (...args: any[]) => any; exec: () => void; }'.
+src/app/auction/[id]/page.tsx(42,26): error TS2339: Property 'bids' does not exist on type '{ prepare: (query: string) => { get: (...params: any[]) => User | Plate | null; all: () => Plate[] | Bid[]; run: (...params: any[]) => void; }; transaction: (fn: any) => (...args: any[]) => any; exec: () => void; }'.
+src/app/auction/[id]/page.tsx(44,23): error TS2339: Property 'users' does not exist on type '{ prepare: (query: string) => { get: (...params: any[]) => User | Plate | null; all: () => Plate[] | Bid[]; run: (...params: any[]) => void; }; transaction: (fn: any) => (...args: any[]) => any; exec: () => void; }'.
+src/app/auction/[id]/page.tsx(54,12): error TS2554: Expected 0 arguments, but got 1.
+src/app/login/actions.ts(3,10): error TS2614: Module '"@/lib/auth"' has no exported member 'login'. Did you mean to use 'import login from "@/lib/auth"' instead?
+src/app/page.tsx(1,10): error TS2614: Module '"@/lib/auth"' has no exported member 'getSession'. Did you mean to use 'import getSession from "@/lib/auth"' instead?
+src/app/page.tsx(1,22): error TS2614: Module '"@/lib/auth"' has no exported member 'logout'. Did you mean to use 'import logout from "@/lib/auth"' instead?
+src/app/page.tsx(15,8): error TS2339: Property 'plates' does not exist on type '{ prepare: (query: string) => { get: (...params: any[]) => User | Plate | null; all: () => Plate[] | Bid[]; run: (...params: any[]) => void; }; transaction: (fn: any) => (...args: any[]) => any; exec: () => void; }'.
+src/app/page.tsx(26,25): error TS2339: Property 'plates' does not exist on type '{ prepare: (query: string) => { get: (...params: any[]) => User | Plate | null; all: () => Plate[] | Bid[]; run: (...params: any[]) => void; }; transaction: (fn: any) => (...args: any[]) => any; exec: () => void; }'.
+src/app/page.tsx(38,30): error TS2339: Property 'bids' does not exist on type '{ prepare: (query: string) => { get: (...params: any[]) => User | Plate | null; all: () => Plate[] | Bid[]; run: (...params: any[]) => void; }; transaction: (fn: any) => (...args: any[]) => any; exec: () => void; }'.
+src/app/page.tsx(41,27): error TS2339: Property 'users' does not exist on type '{ prepare: (query: string) => { get: (...params: any[]) => User | Plate | null; all: () => Plate[] | Bid[]; run: (...params: any[]) => void; }; transaction: (fn: any) => (...args: any[]) => any; exec: () => void; }'.

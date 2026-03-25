@@ -10,38 +10,30 @@ export async function placeBidAction(plateId: number, prevState: any, formData: 
     return { error: "Faqatgina ro'yxatdan o'tgan oddiy foydalanuvchilar qatnasha oladi." };
   }
 
-  // 🔥 VERCEL FIX (ENG MUHIM)
-  if (!db) {
-    console.log("DB yo‘q (Vercel)");
-    return { error: "Serverda database mavjud emas" };
-  }
-
-  const otherActiveBid = db.prepare(`
-    SELECT bids.id FROM bids 
-    JOIN plates ON bids.plateId = plates.id
-    WHERE bids.userId = ? AND plates.status = 'active' AND plates.id != ?
-    LIMIT 1
-  `).get(session.id, plateId);
-
-  if (otherActiveBid) {
-    return { error: "Siz allaqachon boshqa faol auksionda ishtirok etyapsiz! U auksion tugamaguncha yangi auksionlarda ishtirok eta olmaysiz." };
-  }
-
   const amountString = formData.get('amount')?.toString() || '';
   const amountRaw = amountString.replace(/\D/g, '');
   if (!amountRaw) return { error: "Noto'g'ri summa formati" };
 
   const amount = BigInt(amountRaw);
-  const plate = db.prepare('SELECT * FROM plates WHERE id = ?').get(plateId) as any;
+  const now = Date.now();
+
+  const plate = db.plates.find((p: any) => p.id === plateId);
+
+  const otherActiveBid = db.bids.find((b: any) => {
+    const p = db.plates.find((pl: any) => pl.id === b.plateId);
+    return b.userId === session.id && p?.status === 'active' && p.id !== plateId;
+  });
+
+  if (otherActiveBid) {
+    return { error: "Siz allaqachon boshqa faol auksionda ishtirok etyapsiz!" };
+  }
 
   if (!plate || plate.status !== 'active') {
     return { error: 'Auksion topilmadi yoki yakunlangan' };
   }
 
-  const now = Date.now();
-
   if (now > plate.endTime) {
-    db.prepare('UPDATE plates SET status = ? WHERE id = ?').run('finished', plateId);
+    plate.status = 'finished';
     revalidatePath(`/auction/${plateId}`);
     return { error: 'Auksion vaqti tugagan. Qayta yuklang.' };
   }
@@ -61,19 +53,24 @@ export async function placeBidAction(plateId: number, prevState: any, formData: 
     newEndTime += oneHour;
   }
 
-  const transaction = db.transaction(() => {
-    db.prepare('INSERT INTO bids (plateId, userId, amount, createdAt) VALUES (?, ?, ?, ?)')
-      .run(plateId, session.id, amount.toString(), now);
-
-    db.prepare('UPDATE plates SET currentPrice = ?, endTime = ? WHERE id = ?')
-      .run(amount.toString(), newEndTime, plateId);
-  });
-
   try {
-    transaction();
+    // Add bid
+    db.bids.push({
+      id: Date.now(),
+      plateId,
+      userId: session.id,
+      amount: amount.toString(),
+      createdAt: now
+    });
+
+    // Update plate
+    plate.currentPrice = amount.toString();
+    plate.endTime = newEndTime;
+
     revalidatePath(`/auction/${plateId}`);
     revalidatePath('/');
     return { success: true };
+
   } catch (err) {
     return { error: 'Xatolik yuz berdi' };
   }

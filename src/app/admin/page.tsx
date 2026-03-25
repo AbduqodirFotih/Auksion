@@ -6,16 +6,23 @@ import { formatMoneyString } from '@/lib/utils';
 import Link from 'next/link';
 
 export default async function AdminDashboard() {
-  const plates = db.prepare('SELECT * FROM plates ORDER BY regionCode ASC, number ASC').all() as any[];
+  const plates = [...db.plates].sort((a: any, b: any) => {
+    if (a.regionCode !== b.regionCode) return a.regionCode.localeCompare(b.regionCode);
+    return a.number.localeCompare(b.number);
+  });
   
   const platesWithBids = plates.map(plate => {
-    const bids = db.prepare(`
-      SELECT bids.amount, bids.createdAt, users.name as userName 
-      FROM bids 
-      JOIN users ON bids.userId = users.id 
-      WHERE plateId = ? 
-      ORDER BY amount DESC
-    `).all(plate.id) as any[];
+    const bids = db.bids
+      .filter((b: any) => b.plateId === plate.id)
+      .map((b: any) => {
+        const user = db.users.find((u: any) => u.id === b.userId);
+        return {
+          amount: b.amount,
+          createdAt: b.createdAt,
+          userName: user?.name || 'Unknown'
+        };
+      })
+      .sort((a: any, b: any) => Number(b.amount) - Number(a.amount));
     return { ...plate, bids };
   });
 

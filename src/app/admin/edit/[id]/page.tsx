@@ -13,7 +13,7 @@ export default async function EditPlatePage({ params }: { params: Promise<{ id: 
   const session = await getSession();
   if (!session || session.role !== 'admin') return notFound();
 
-  const plate = db.prepare('SELECT * FROM plates WHERE id = ?').get(plateId) as any;
+  const plate = db.plates.find((p: any) => p.id === plateId) as any;
   if (!plate) notFound();
 
   return (

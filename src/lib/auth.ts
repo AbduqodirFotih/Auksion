@@ -1,62 +1,105 @@
 import { cookies } from 'next/headers';
 import db from './db';
 
-export async function login(name: string, password?: string) {
+type Session = {
+  id: number;
+  name: string;
+  role: string;
+};
+
+const ADMIN_PASSWORD = '1234';
+
+export async function login(name: string, password: string) {
+  'use server';
+  
+  if (!name || name.trim() === '') {
+    return { success: false, error: 'Ismingizni kiritib bering' };
+  }
+
   if (name === 'admin') {
-    if (password === '1234') {
-      (await cookies()).set('session', 'admin', { httpOnly: true, path: '/' });
-      return { success: true, role: 'admin' };
+    if (password !== ADMIN_PASSWORD) {
+      return { success: false, error: 'Parol noto\'g\'ri' };
     }
-    return { success: false, error: 'Xato parol' };
+    const user = db.users.find((u: any) => u.name === 'admin');
+    if (user) {
+      try {
+        const cookieStore = await cookies();
+        cookieStore.set(
+          'session',
+          JSON.stringify({ id: user.id, name: user.name, role: user.role }),
+          { 
+            httpOnly: true, 
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 * 7
+          }
+        );
+      } catch (e) {
+        // Silently fail
+      }
+      return { success: true, role: user.role };
+    }
   }
 
-  if (name.trim() === '') {
-    return { success: false, error: 'Ismni kiriting' };
+  const user = db.users.find((u: any) => u.name === name);
+  if (user) {
+    try {
+      const cookieStore = await cookies();
+      cookieStore.set(
+        'session',
+        JSON.stringify({ id: user.id, name: user.name, role: user.role }),
+        { 
+          httpOnly: false,
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24 * 7
+        }
+      );
+    } catch (e) {
+      // Silently fail
+    }
+    return { success: true, role: user.role };
   }
 
-  // 🔥 VERCEL FIX
-  if (!db) {
-    return { success: false, error: "Serverda database mavjud emas" };
+  const newUserId = Math.max(...db.users.map((u: any) => u.id), 0) + 1;
+  const newUser = { id: newUserId, name: name.trim(), role: 'user' };
+  db.users.push(newUser);
+
+  try {
+    const cookieStore = await cookies();
+    cookieStore.set(
+      'session',
+      JSON.stringify(newUser),
+      { 
+        httpOnly: false,
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 7
+      }
+    );
+  } catch (e) {
+    // Silently fail
   }
 
-  let user = db.prepare('SELECT * FROM users WHERE name = ?').get(name) as any;
-
-  if (!user) {
-    const result = db.prepare('INSERT INTO users (name, role) VALUES (?, ?)')
-      .run(name, 'user');
-
-    user = { id: result.lastInsertRowid, name, role: 'user' };
-  }
-
-  (await cookies()).set('session', `user:${user.id}`, { httpOnly: true, path: '/' });
   return { success: true, role: 'user' };
 }
 
 export async function logout() {
-  (await cookies()).delete('session');
+  'use server';
+  try {
+    const cookieStore = await cookies();
+    cookieStore.delete('session');
+  } catch (e) {
+    // Silently fail
+  }
 }
 
-export async function getSession() {
-  const cookieStore = await cookies();
-  const sessionData = cookieStore.get('session')?.value;
-
-  if (!sessionData) return null;
-
-  // 🔥 VERCEL FIX
-  if (!db) {
+export async function getSession(): Promise<Session | null> {
+  try {
+    const cookieStore = await cookies();
+    const sessionData = cookieStore.get('session')?.value;
+    
+    if (!sessionData) return null;
+    return JSON.parse(sessionData) as Session;
+  } catch (error) {
     return null;
   }
-
-  if (sessionData === 'admin') {
-    const admin = db.prepare('SELECT * FROM users WHERE name = ?').get('admin') as any;
-    return admin;
-  }
-
-  if (sessionData.startsWith('user:')) {
-    const userId = sessionData.split(':')[1];
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId) as any;
-    if (user) return user;
-  }
-
-  return null;
 }

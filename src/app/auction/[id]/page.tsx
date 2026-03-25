@@ -13,7 +13,8 @@ export default async function AuctionPage({ params }: { params: Promise<{ id: st
   const plateId = parseInt(resolvedParams.id, 10);
   if (isNaN(plateId)) notFound();
 
-  const plate = db.prepare('SELECT * FROM plates WHERE id = ?').get(plateId) as any;
+  let plate: any = db.plates.find((p: any) => p.id === plateId);
+
   if (!plate) notFound();
 
   const session = await getSession();
@@ -21,17 +22,14 @@ export default async function AuctionPage({ params }: { params: Promise<{ id: st
   // Update status if ended
   const now = Date.now();
   if (plate.status === 'active' && now > plate.endTime) {
-    db.prepare('UPDATE plates SET status = ? WHERE id = ?').run('finished', plateId);
     plate.status = 'finished';
   }
 
-  const bids = db.prepare(`
-    SELECT bids.*, users.name as userName 
-    FROM bids 
-    JOIN users ON bids.userId = users.id 
-    WHERE plateId = ? 
-    ORDER BY amount DESC
-  `).all(plateId) as any[];
+  const plateBids = db.bids.filter((b: any) => b.plateId === plateId).sort((a: any, b: any) => Number(b.amount) - Number(a.amount));
+  const bids = plateBids.map((b: any) => {
+    const user = db.users.find((u: any) => u.id === b.userId);
+    return { ...b, userName: user ? user.name : 'Unknown' };
+  });
 
   const isFinished = plate.status === 'finished';
 
@@ -96,7 +94,7 @@ export default async function AuctionPage({ params }: { params: Promise<{ id: st
             </h3>
             
             <div className="flex-1 overflow-y-auto pr-2 space-y-4">
-               {bids.map((bid, i) => (
+               {bids.map((bid: any, i: number) => (
                  <div key={bid.id} className="bg-slate-950/50 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between group hover:border-indigo-500/30 transition-colors">
                     <div className="flex items-center gap-4">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${i === 0 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-400 border border-slate-700'}`}>

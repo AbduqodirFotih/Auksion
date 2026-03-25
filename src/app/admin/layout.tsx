@@ -1,7 +1,8 @@
-import { getSession, logout } from '@/lib/auth';
+import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { LogOut, Home, Crown } from 'lucide-react';
+import { adminLogoutAction } from './logout-action';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
@@ -27,11 +28,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </Link>
         </nav>
 
-        <form action={async () => {
-          'use server';
-          await logout();
-          redirect('/login');
-        }}>
+        <form action={adminLogoutAction}>
           <button className="w-full flex items-center gap-2 py-3 px-4 rounded-xl text-red-400 hover:bg-red-400/10 transition-colors mt-auto font-medium">
             <LogOut size={18} />
             Chiqish

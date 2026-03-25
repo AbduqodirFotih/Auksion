@@ -7,7 +7,13 @@ import { revalidatePath } from 'next/cache';
 export async function placeBidAction(plateId: number, prevState: any, formData: FormData) {
   const session = await getSession();
   if (!session || session.role !== 'user') {
-     return { error: "Faqatgina ro'yxatdan o'tgan oddiy foydalanuvchilar qatnasha oladi." };
+    return { error: "Faqatgina ro'yxatdan o'tgan oddiy foydalanuvchilar qatnasha oladi." };
+  }
+
+  // 🔥 VERCEL FIX (ENG MUHIM)
+  if (!db) {
+    console.log("DB yo‘q (Vercel)");
+    return { error: "Serverda database mavjud emas" };
   }
 
   const otherActiveBid = db.prepare(`
@@ -22,36 +28,45 @@ export async function placeBidAction(plateId: number, prevState: any, formData: 
   }
 
   const amountString = formData.get('amount')?.toString() || '';
-  const amountRaw = amountString.replace(/\\D/g, '');
+  const amountRaw = amountString.replace(/\D/g, '');
   if (!amountRaw) return { error: "Noto'g'ri summa formati" };
 
   const amount = BigInt(amountRaw);
   const plate = db.prepare('SELECT * FROM plates WHERE id = ?').get(plateId) as any;
-  if (!plate || plate.status !== 'active') return { error: 'Auksion topilmadi yoki yakunlangan' };
-  
+
+  if (!plate || plate.status !== 'active') {
+    return { error: 'Auksion topilmadi yoki yakunlangan' };
+  }
+
   const now = Date.now();
+
   if (now > plate.endTime) {
-     db.prepare('UPDATE plates SET status = ? WHERE id = ?').run('finished', plateId);
-     revalidatePath(`/auction/${plateId}`);
-     return { error: 'Auksion vaqti tugagan. Qayta yuklang.' };
+    db.prepare('UPDATE plates SET status = ? WHERE id = ?').run('finished', plateId);
+    revalidatePath(`/auction/${plateId}`);
+    return { error: 'Auksion vaqti tugagan. Qayta yuklang.' };
   }
 
   const currentPrice = BigInt(plate.currentPrice);
+
   if (amount <= currentPrice) {
-    let reqAmountStr = currentPrice.toString().replace(/\\B(?=(\\d{3})+(?!\\d))/g, ' ');
+    let reqAmountStr = currentPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
     return { error: `Taklif summasi ${reqAmountStr} so'mdan yuqori bo'lishi shart` };
   }
 
   const fiveMin = 5 * 60 * 1000;
   const oneHour = 60 * 60 * 1000;
   let newEndTime = plate.endTime;
+
   if (plate.endTime - now <= fiveMin) {
     newEndTime += oneHour;
   }
 
   const transaction = db.transaction(() => {
-     db.prepare('INSERT INTO bids (plateId, userId, amount, createdAt) VALUES (?, ?, ?, ?)').run(plateId, session.id, amount.toString(), now);
-     db.prepare('UPDATE plates SET currentPrice = ?, endTime = ? WHERE id = ?').run(amount.toString(), newEndTime, plateId);
+    db.prepare('INSERT INTO bids (plateId, userId, amount, createdAt) VALUES (?, ?, ?, ?)')
+      .run(plateId, session.id, amount.toString(), now);
+
+    db.prepare('UPDATE plates SET currentPrice = ?, endTime = ? WHERE id = ?')
+      .run(amount.toString(), newEndTime, plateId);
   });
 
   try {

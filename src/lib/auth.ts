@@ -14,10 +14,17 @@ export async function login(name: string, password?: string) {
     return { success: false, error: 'Ismni kiriting' };
   }
 
-  // User login
+  // 🔥 VERCEL FIX
+  if (!db) {
+    return { success: false, error: "Serverda database mavjud emas" };
+  }
+
   let user = db.prepare('SELECT * FROM users WHERE name = ?').get(name) as any;
+
   if (!user) {
-    const result = db.prepare('INSERT INTO users (name, role) VALUES (?, ?)').run(name, 'user');
+    const result = db.prepare('INSERT INTO users (name, role) VALUES (?, ?)')
+      .run(name, 'user');
+
     user = { id: result.lastInsertRowid, name, role: 'user' };
   }
 
@@ -32,7 +39,13 @@ export async function logout() {
 export async function getSession() {
   const cookieStore = await cookies();
   const sessionData = cookieStore.get('session')?.value;
+
   if (!sessionData) return null;
+
+  // 🔥 VERCEL FIX
+  if (!db) {
+    return null;
+  }
 
   if (sessionData === 'admin') {
     const admin = db.prepare('SELECT * FROM users WHERE name = ?').get('admin') as any;

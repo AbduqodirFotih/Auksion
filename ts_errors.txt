@@ -1,0 +1,33 @@
+﻿src/app/admin/actions.ts(18,46): error TS1005: ',' expected.
+src/app/admin/actions.ts(18,47): error TS1127: Invalid character.
+src/app/admin/actions.ts(18,48): error TS1127: Invalid character.
+src/app/admin/actions.ts(18,58): error TS1005: ':' expected.
+src/app/admin/actions.ts(18,65): error TS1005: ',' expected.
+src/app/admin/actions.ts(18,69): error TS1002: Unterminated string literal.
+src/app/admin/actions.ts(19,3): error TS1005: ':' expected.
+src/app/admin/actions.ts(93,1): error TS1005: '}' expected.
+src/app/auction/[id]/actions.ts(10,38): error TS1005: ',' expected.
+src/app/auction/[id]/actions.ts(10,46): error TS1005: ',' expected.
+src/app/auction/[id]/actions.ts(10,47): error TS1127: Invalid character.
+src/app/auction/[id]/actions.ts(10,48): error TS1127: Invalid character.
+src/app/auction/[id]/actions.ts(10,95): error TS1005: ':' expected.
+src/app/auction/[id]/actions.ts(26,43): error TS1005: ',' expected.
+src/app/auction/[id]/actions.ts(26,44): error TS1127: Invalid character.
+src/app/auction/[id]/actions.ts(26,45): error TS1127: Invalid character.
+src/app/auction/[id]/actions.ts(26,65): error TS1005: ':' expected.
+src/app/auction/[id]/AdminControlsCard.tsx(47,57): error TS1005: ',' expected.
+src/app/auction/[id]/AdminControlsCard.tsx(47,73): error TS1005: ':' expected.
+src/app/auction/[id]/AdminControlsCard.tsx(47,75): error TS1005: ',' expected.
+src/app/auction/[id]/AdminControlsCard.tsx(47,78): error TS1002: Unterminated string literal.
+src/app/auction/[id]/AdminControlsCard.tsx(48,15): error TS1005: ',' expected.
+src/app/auction/[id]/AdminControlsCard.tsx(60,54): error TS1005: ',' expected.
+src/app/auction/[id]/AdminControlsCard.tsx(60,76): error TS1005: ',' expected.
+src/app/auction/[id]/AdminControlsCard.tsx(60,79): error TS1127: Invalid character.
+src/app/auction/[id]/AdminControlsCard.tsx(65,18): error TS1005: '}' expected.
+src/app/auction/[id]/AdminControlsCard.tsx(66,14): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/auction/[id]/AdminControlsCard.tsx(67,12): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/auction/[id]/AdminControlsCard.tsx(67,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/auction/[id]/AdminControlsCard.tsx(70,9): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/app/auction/[id]/AdminControlsCard.tsx(72,11): error TS17002: Expected corresponding JSX closing tag for 'div'.
+src/app/auction/[id]/AdminControlsCard.tsx(74,5): error TS1005: ')' expected.
+src/app/auction/[id]/AdminControlsCard.tsx(75,3): error TS1109: Expression expected.

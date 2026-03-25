@@ -1,0 +1,15 @@
+﻿src/app/auction/[id]/actions.ts(10,38): error TS1005: ',' expected.
+src/app/auction/[id]/actions.ts(10,46): error TS1005: ',' expected.
+src/app/auction/[id]/actions.ts(10,47): error TS1127: Invalid character.
+src/app/auction/[id]/actions.ts(10,48): error TS1127: Invalid character.
+src/app/auction/[id]/actions.ts(10,127): error TS1005: ':' expected.
+src/app/auction/[id]/actions.ts(17,29): error TS1005: ',' expected.
+src/app/auction/[id]/actions.ts(17,30): error TS1127: Invalid character.
+src/app/auction/[id]/actions.ts(17,31): error TS1127: Invalid character.
+src/app/auction/[id]/actions.ts(17,51): error TS1005: ':' expected.
+src/app/auction/[id]/actions.ts(33,21): error TS1127: Invalid character.
+src/app/auction/[id]/actions.ts(33,22): error TS1136: Property assignment expected.
+src/app/auction/[id]/actions.ts(52,31): error TS1005: ';' expected.
+src/app/auction/[id]/actions.ts(59,1): error TS1160: Unterminated template literal.
+src/lib/auth.ts(24,36): error TS1127: Invalid character.
+src/lib/auth.ts(50,1): error TS1160: Unterminated template literal.
